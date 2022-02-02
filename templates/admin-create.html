@@ -1,0 +1,23 @@
+{%extends 'base.html'%}
+
+{%block contents%}  
+
+<div class="form-wrap">
+    <form action='/admin/create' method="POST">
+        <h4>Title</h4>
+        <input type="text" name="title" id="title" placeholder="Enter title here...">
+        <br>
+        <h4>Cover Photo</h4>
+        <input type="text" name="cover" id="cover" placeholder="Paste photo link...">
+        <br>
+        <h4>Intro</h4>
+        <textarea rows = "5" cols = "60" name = "intro" id="intro" placeholder="Add an intro..."></textarea>
+       <br>
+       <h4>Content</h4>
+        <textarea rows = "5" cols = "60" name = "content" id="content" placeholder="Write your blog..."></textarea>
+       <br><br>
+        <input type="submit" value="Post" id="submit-button"> 
+    </form>
+    </div>
+
+{%endblock%}

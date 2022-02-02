@@ -1,0 +1,21 @@
+{%extends 'base.html'%}
+
+{% block contents %}
+
+<div class="content">
+    <div class="full-content">
+    {%if blog.cover!="" and blog.cover!=None%}
+        <img src='{{blog.cover|safe}}' placeholder="Blog Cover" width="100%">
+    {%endif%}
+    <h2> {{blog.title}}</h2>
+    <div font-size="15px">  {{blog.date_created}} </div>
+    <br>
+    {%for x in blog.content%}
+    <p>
+        {{x}}
+    </p>
+    {%endfor%}
+    </div>
+</div>
+
+{%endblock%}

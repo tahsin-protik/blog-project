@@ -1,18 +1,39 @@
+from crypt import methods
 from distutils.log import error
+from email import message
 from email.policy import default
+from http import cookies
 import math
+from multiprocessing.sharedctypes import Value
 from sqlalchemy.dialects.postgresql import UUID
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, make_response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from models.blogs import Blog
+from models.message import Message
+from init import db, app
+from models.user import User 
 import uuid
 
-app= Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models/test.db'
-db= SQLAlchemy(app)
+class create_user():
+    def create(username, password):
+        new_user=User(username=username, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        print("New User Created")
 
+# create_user.create("tahsin_protik", "password1234")
 
+def authenticate(token):
+    if token:
+        user=User.query.filter_by(token=token).first()
+        if user:
+            return []
+        else:
+            raise error 
+        
+    else:
+        raise error
 
 @app.route('/')
 def index():
@@ -22,15 +43,82 @@ def index():
     # print(blogs)
     return render_template('index.html', blogs=blogs)
 
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method=='POST':
+        username=request.form['username']
+        password=request.form['password']
+        user=User.query.filter_by(username=username).first()
+        res=[]
+        if user==None:
+            return render_template('login.html')
+        if user.password!=password:
+            return render_template('login.html')
+        x=str(uuid.uuid4())
+        user.token=x
+        db.session.commit()
+        res=make_response(redirect('/admin'))
+        res.set_cookie("token", value=x)
+        return res
+    else:
+        return render_template('login.html')
+
 @app.route('/admin')
 def admin():
+    token=request.cookies.get('token')
+    print(token)
+    try:
+        authenticate(token)
+    except:
+        return redirect('/admin/login')
     blogs=Blog.query.order_by(Blog.date_created).all()
     return render_template('admin.html', blogs=blogs)
 
+@app.route('/admin/message')
+def getMessage():
+    token=request.cookies.get("token")
+    try:
+        authenticate(token)
+    except:
+        return redirect('/admin/login')
+    
+    messages=Message.query.order_by(Message.date_created).all()
+    for x in messages:
+        x.message=x.message.split('\n')
+    return render_template('message.html', messages=messages)
 
+@app.route('/contact', methods=['GET', 'POST'])
+def message():
+    if request.method=='POST':
+        message_sender=request.form['sender']
+        message_message=request.form['message']
+        messages=Message.query.order_by(Message.date_created).all()
+        id=0
+        for x in messages:
+            id=max(x.id, id)
+        
+        id=id+1
+        new_message= Message(id=id, sender=message_sender, message=message_message)
+        try:
+            db.session.add(new_message)
+            db.session.commit()
+            return redirect('/')
+        except Exception as e:
+            print(e)
+            return redirect('/')
+        
+    else:
+        return render_template('contact.html')
 
 @app.route('/admin/create', methods=['GET', 'POST'])
 def create():
+    token=request.cookies.get("token")
+    try:
+        authenticate(token)
+    except:
+        return redirect('/admin/login')
+
     if request.method=='POST':
         print(request.form)
         blog_intro=request.form['intro']
@@ -57,6 +145,13 @@ def create():
 
 @app.route('/admin/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
+
+    token=request.cookies.get("token")
+    try:
+        authenticate(token)
+    except:
+        return redirect('/admin/login')
+
     if request.method=='POST':
         blog= Blog.query.filter_by(id = id).first()
         blog.title=request.form['title']
@@ -77,6 +172,12 @@ def edit(id):
 
 @app.route('/admin/delete/<int:id>')
 def delete(id):
+    token=request.cookies.get("token")
+    try:
+        authenticate(token)
+    except:
+        return redirect('/admin/login')
+
     Blog.query.filter_by(id = id).delete()
     db.session.commit()
     return redirect('/admin')

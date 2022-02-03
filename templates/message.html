@@ -1,0 +1,25 @@
+{%extends 'base.html'%}
+
+{%block admin_nav%}
+<li><a href="/admin">Blogs</a></li>
+<li><a href="/admin/message">Message</a></li>
+{%endblock%}
+
+{% block contents %}
+<div class="content">
+    {%for x in messages%}
+    <div class="single-message">
+        <h4>From: {%if x.sender!=""%} {{x.sender}}{%else%} Annonymas{%endif%}</h4>
+        <h6> {{x.date_created}} </h6>
+        {%for y in x.message%}
+        <p>
+            {{y}}
+        </p>
+        {%endfor%}
+    </div>
+    <br>
+    {%endfor%}
+
+</div>
+
+{%endblock%}

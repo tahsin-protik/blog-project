@@ -2,7 +2,7 @@ from email.policy import default
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from datetime import datetime
-from models.init import db
+from init import db
 
 class Blog(db.Model):
     id = db.Column(db.Integer,  primary_key=True)

@@ -1,11 +1,15 @@
 {%extends 'base.html'%}
 
-{%block admin_nav%} 
+
+
+{%block admin_nav%}
 <li><a href="/admin">Blogs</a></li>
 <li><a href="/admin/message">Message</a></li>
 {%endblock%}
 
+
 {% block contents %}
+<div class="create-blog-button"><a href= "/admin/create"> Create New Blog</a></div>
 
 <div class="content">
     {%for i in blogs%}
@@ -35,8 +39,6 @@
         }
 
     </style>
-
-    
     <a href="/admin/edit/{{i.id}}">
     <div id="content-{{i.id}}">
     <div class="single-content">
